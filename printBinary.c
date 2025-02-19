@@ -14,7 +14,8 @@ int main()
     return 0;
 }
 
-// @brief 这个函数用来按位输出二进制数，输入任意数字都可以
+// @brief 按位输出二进制数
+// @param 要转换成二进制输出的数字
 // @retval 无返回值
 void printBinary(int number)
 {
