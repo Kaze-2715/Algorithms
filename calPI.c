@@ -1,7 +1,7 @@
 /*
  * @author Zhao Fangming
  * @brief  高精度计算pi值
- * @date Y2025-03-16
+ * @date 2025-03-16
  */
 
 #include <stdio.h>
@@ -19,7 +19,11 @@ struct node
     node *next; // 指向后一个节点
 };
 
-// 计算需要的项数
+/*
+ * @brief 计算需要的项数
+ * @param digits 需要计算的pi值的位数
+ * @return int 返回需要计算的项数
+ */
 int calculateItems(int digits)
 {
     double add = 0.0;
@@ -34,7 +38,11 @@ int calculateItems(int digits)
     return items;
 }
 
-// 创建链表节点
+/*
+ * @brief 创建新的链表节点
+ * @param List 链表头指针的地址
+ * @return int 返回0表示创建成功
+ */
 int createNode(list *List)
 {
     // 采用头插法建表
@@ -55,7 +63,12 @@ int createNode(list *List)
     return 0;
 }
 
-// 初始化链表
+/*
+ * @brief 初始化链表
+ * @param List 链表头指针的地址
+ * @param digits 需要初始化的位数
+ * @return int 返回0表示初始化成功
+ */
 int initList(list *List, int digits) // !初始化应该留三位有效数字！
 {
     for (int i = 0; i < digits; i++)
@@ -65,7 +78,12 @@ int initList(list *List, int digits) // !初始化应该留三位有效数字！
     return 0;
 }
 
-// 打印pi值
+/*
+ * @brief 打印计算得到的pi值
+ * @param pi pi值链表的头指针地址
+ * @param digits 需要打印的位数
+ * @return int 返回0表示打印成功
+ */
 int printPI(list *pi, int digits)
 {
     node *ptr = *pi;
@@ -83,7 +101,12 @@ int printPI(list *pi, int digits)
     return 0;
 }
 
-// 计算每一个要乘的系数的值
+/*
+ * @brief 计算每一项的系数值
+ * @param term 用于存储系数的链表的头指针地址
+ * @param termNumber 当前项的序号
+ * @return int 返回0表示计算成功
+ */
 int calculateTerm(list *term, int termNumber)
 {
     int numerator = termNumber;
@@ -98,7 +121,13 @@ int calculateTerm(list *term, int termNumber)
     return 0;
 }
 
-// 将当前项乘到结果中
+/*
+ * @brief 将当前项乘到结果中
+ * @param pi 存储pi值的链表的头指针地址
+ * @param term 存储当前项系数的链表的头指针地址
+ * @param result 存储中间计算结果的链表的头指针地址
+ * @return int 返回0表示计算成功
+ */
 int multiply(list *pi, list *term, list *result)
 {
     node *ptrPi = *pi;
@@ -191,7 +220,7 @@ int main()
     // 获取用户输入的位数
     scanf("%d", &digits);
     termNumber = calculateItems(digits);
-    //初始化用于储存结果用的链表
+    // 初始化用于储存结果用的链表
     initList(&pi, digits + 3);
     initList(&term, digits + 3);
     initList(&result, 2 * digits + 5);
