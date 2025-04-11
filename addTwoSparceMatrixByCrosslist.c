@@ -1,42 +1,8 @@
 /*
- * 稀疏矩阵加法实现过程中遇到的问题及解决方案：
- * 
- * 1. 数据结构设计问题
- *    - 问题：最初使用指针数组作为行列头，导致内存管理复杂
- *    - 解决：改用节点数组作为行列头，简化了内存管理
- *    - 优点：直接通过下标访问行列头，避免了额外的指针管理
- * 
- * 2. colTails数组问题
- *    - 问题1：原本定义为node数组，导致对节点的复制而不是指向
- *    - 解决1：改为node**类型，只存储指针
- *    - 问题2：更新colTails时出现段错误
- *    - 解决2：确保先更新down指针再更新colTails指针
- * 
- * 3. 节点插入顺序问题
- *    - 问题：没有保持行内和列内元素的有序性
- *    - 解决：在插入时通过while循环找到正确的插入位置
- *    - 注意：需要同时维护right和down两个方向的顺序
- * 
- * 4. 内存泄漏问题
- *    - 问题1：createNode失败时没有处理
- *    - 解决1：添加返回值检查
- *    - 问题2：矩阵结构的内存没有完全释放
- *    - 解决2：实现完整的freeMatrix函数，按正确顺序释放
- * 
- * 5. 异常处理问题
- *    - 问题：主函数中没有检查add返回值
- *    - 解决：添加返回值检查，失败时清理已分配的内存
- *    - 改进：所有可能失败的函数调用都增加错误处理
- * 
- * 6. 输出缓存问题
- *    - 问题：程序看似无输出
- *    - 原因：输出缓冲区未刷新
- *    - 解决：在关键输出后添加fflush(stdout)
- * 
- * 7. 求和为零的情况
- *    - 问题：没有处理两个非零元素相加和为零的情况
- *    - 解决：只在和不为零时才创建新节点
- *    - 优化：减少了存储空间和后续处理量
+ * 文件名: addTwoSparceMatrixByCrosslist.c
+ * 功能: 使用十字链表实现稀疏矩阵的加法运算
+ * 作者: Zhao Fangming
+ * 完成时间: 2025-04-12
  */
 
 #include <stdio.h>
@@ -51,9 +17,16 @@ typedef struct node
 typedef struct matrix
 {
     int rowCount, colCount;
-    node *row, *col; // 改为节点数组
+    node *row, *col;
 } matrix;
 
+/**
+ * @brief 创建矩阵节点
+ * @param row 行号
+ * @param col 列号
+ * @param data 节点数据
+ * @return 返回新创建的节点指针
+ */
 node *createNode(int row, int col, int data)
 {
     node *new = malloc(sizeof(node));
@@ -66,6 +39,13 @@ node *createNode(int row, int col, int data)
     return new;
 }
 
+/**
+ * @brief 初始化十字链表矩阵
+ * @param rowCount 矩阵行数
+ * @param colCount 矩阵列数
+ * @return 返回初始化的矩阵指针
+ * @note 会分配行列头节点数组内存
+ */
 matrix *initMatrix(int rowCount, int colCount)
 {
     matrix *new = malloc(sizeof(matrix));
@@ -97,6 +77,13 @@ matrix *initMatrix(int rowCount, int colCount)
     return new;
 }
 
+/**
+ * @brief 十字链表矩阵加法
+ * @param A 第一个矩阵指针
+ * @param B 第二个矩阵指针
+ * @return 返回结果矩阵指针，失败返回NULL
+ * @note 维护行列的有序性
+ */
 matrix *add(matrix *A, matrix *B)
 {
     if (A->colCount != B->colCount || A->rowCount != B->rowCount)
@@ -157,7 +144,7 @@ matrix *add(matrix *A, matrix *B)
                 tail->right = newNode;
                 tail = tail->right;
                 colTails[newNode->col]->down = newNode; //?
-                colTails[newNode->col] = newNode; // 恢复这行代码
+                colTails[newNode->col] = newNode;       // 恢复这行代码
             }
         }
     }
@@ -165,7 +152,11 @@ matrix *add(matrix *A, matrix *B)
     return new;
 }
 
-// 按行遍历矩阵并输出三元组
+/**
+ * @brief 输出矩阵的三元组表示
+ * @param m 待输出的矩阵指针
+ * @note 按行主序输出
+ */
 void printTriples(matrix *m)
 {
     for (int i = 0; i < m->rowCount; i++)
@@ -179,7 +170,11 @@ void printTriples(matrix *m)
     }
 }
 
-// 添加内存释放函数
+/**
+ * @brief 释放矩阵内存
+ * @param m 待释放的矩阵指针
+ * @note 会递归释放所有节点内存
+ */
 void freeMatrix(matrix *m)
 {
     if (!m)

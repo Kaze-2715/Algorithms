@@ -1,3 +1,10 @@
+/*
+ * 文件名: multiplyTwoSparceMatrixByCrosslist.c
+ * 功能: 使用十字链表实现稀疏矩阵的乘法运算
+ * 作者: Zhao Fangming
+ * 完成时间: 2025-04-12
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -15,7 +22,13 @@ typedef struct matrix
     node *row, *col; // 行列头节点数组
 } matrix;
 
-// 创建新节点
+/**
+ * @brief 创建矩阵节点
+ * @param row 行号
+ * @param col 列号
+ * @param data 节点数据
+ * @return 返回新创建的节点指针
+ */
 node *createNode(int row, int col, int data)
 {
     node *new = malloc(sizeof(node));
@@ -26,11 +39,17 @@ node *createNode(int row, int col, int data)
     return new;
 }
 
-// 初始化矩阵
+/**
+ * @brief 初始化稀疏矩阵
+ * @param rowCount 矩阵行数
+ * @param colCount 矩阵列数
+ * @return 返回初始化的矩阵指针
+ * @note 会分配行列头节点数组内存
+ */
 matrix *initMatrix(int rowCount, int colCount)
 {
     matrix *new = malloc(sizeof(matrix));
-    new->row = malloc(rowCount * sizeof(node));  // 修正：移除了多余的+1
+    new->row = malloc(rowCount * sizeof(node)); // 修正：移除了多余的+1
     new->col = malloc(colCount * sizeof(node));
     new->rowCount = rowCount;
     new->colCount = colCount;
@@ -54,19 +73,18 @@ matrix *initMatrix(int rowCount, int colCount)
     return new;
 }
 
-/*
- * 矩阵乘法函数
+/**
+ * @brief 矩阵乘法运算
  * @param A 左矩阵
  * @param B 右矩阵
- * @return 结果矩阵，如果无法相乘则返回NULL
- * 要求：A的列数等于B的行数
- * 结果矩阵：行数等于A的行数，列数等于B的列数
+ * @return 返回结果矩阵指针，失败返回NULL
+ * @note A的列数必须等于B的行数
  */
 matrix *multiply(matrix *A, matrix *B)
 {
     if (A->colCount != B->rowCount)
     {
-        return NULL;  // 移除puts，直接返回NULL
+        return NULL; // 移除puts，直接返回NULL
     }
 
     matrix *result = initMatrix(A->rowCount, B->colCount);
@@ -79,8 +97,6 @@ matrix *multiply(matrix *A, matrix *B)
         {
             int sum = 0;
             node *rowA = A->row[i].right;
-            
-            // 修改计算逻辑
             while (rowA != NULL)
             {
                 node *colB = B->col[j].down;
@@ -98,7 +114,7 @@ matrix *multiply(matrix *A, matrix *B)
             if (sum != 0)
             {
                 node *newNode = createNode(i, j, sum);
-                
+
                 // 行链表插入（按列号排序）
                 if (result->row[i].right == NULL || result->row[i].right->col > j)
                 {
@@ -115,7 +131,7 @@ matrix *multiply(matrix *A, matrix *B)
                     newNode->right = curr->right;
                     curr->right = newNode;
                 }
-                
+
                 // 列链表插入（按行号排序）
                 if (result->col[j].down == NULL || result->col[j].down->row > i)
                 {
@@ -135,24 +151,50 @@ matrix *multiply(matrix *A, matrix *B)
             }
         }
     }
-    
+
     return result;
 }
 
-// 主函数部分需要添加：
+/**
+ * @brief 释放矩阵内存
+ * @param m 待释放的矩阵指针
+ * @note 会递归释放所有节点内存
+ */
+void freeMatrix(matrix *m)
+{
+    if (m == NULL)
+        return;
+
+    for (int i = 0; i < m->rowCount; i++)
+    {
+        node *curr = m->row[i].right;
+        while (curr != NULL)
+        {
+            node *temp = curr;
+            curr = curr->right;
+            free(temp);
+        }
+    }
+
+    free(m->row);
+    free(m->col);
+    free(m);
+}
+
 int main()
 {
     int m, n, row, col, val;
-    
+
     // 读取第一个矩阵
     scanf("%d %d", &m, &n);
     matrix *A = initMatrix(m, n);
     while (1)
     {
         scanf("%d %d %d", &row, &col, &val);
-        if (row == 0 && col == 0 && val == 0) break;
-        node *newNode = createNode(row - 1, col - 1, val);  // 转换为0基索引
-        
+        if (row == 0 && col == 0 && val == 0)
+            break;
+        node *newNode = createNode(row - 1, col - 1, val); // 转换为0基索引
+
         // 插入行链表
         if (A->row[row - 1].right == NULL)
             A->row[row - 1].right = newNode;
@@ -168,7 +210,7 @@ int main()
             prev->right = newNode;
             newNode->right = p;
         }
-        
+
         // 插入列链表
         if (A->col[col - 1].down == NULL)
             A->col[col - 1].down = newNode;
@@ -185,16 +227,17 @@ int main()
             newNode->down = p;
         }
     }
-    
-    // 读取第二个矩阵（类似过程）
+
+    // 读取第二个矩阵
     scanf("%d %d", &m, &n);
     matrix *B = initMatrix(m, n);
     while (1)
     {
         scanf("%d %d %d", &row, &col, &val);
-        if (row == 0 && col == 0 && val == 0) break;
+        if (row == 0 && col == 0 && val == 0)
+            break;
         node *newNode = createNode(row - 1, col - 1, val);
-        
+
         if (B->row[row - 1].right == NULL)
             B->row[row - 1].right = newNode;
         else
@@ -209,7 +252,7 @@ int main()
             prev->right = newNode;
             newNode->right = p;
         }
-        
+
         if (B->col[col - 1].down == NULL)
             B->col[col - 1].down = newNode;
         else
@@ -225,7 +268,7 @@ int main()
             newNode->down = p;
         }
     }
-    
+
     // 计算乘积并输出结果
     matrix *C = multiply(A, B);
     if (C != NULL)
@@ -241,6 +284,10 @@ int main()
             }
         }
     }
-    
+
+    freeMatrix(A);
+    freeMatrix(B);
+    freeMatrix(C);
+
     return 0;
 }

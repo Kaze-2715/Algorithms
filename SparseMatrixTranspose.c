@@ -1,10 +1,8 @@
 /*
- * SparseMatrixTranspose.c - 稀疏矩阵转置算法实现
- *
- * 实现思路：
- * 1. 使用三元组表示稀疏矩阵：(行号,列号,值)
- * 2. 转置就是将三元组中的行列互换
- * 3. 按照新的列号（原行号）排序
+ * 文件名: SparseMatrixTranspose.c
+ * 功能: 实现稀疏矩阵的快速转置算法
+ * 作者: Zhao Fangming
+ * 完成时间: 2025-04-12
  */
 
 #define MAX 1000
@@ -24,6 +22,13 @@ typedef struct RLSMatrix
     int rowCount, colCount, eleNum;
 } RLSMatrix;
 
+/**
+ * @brief 稀疏矩阵快速转置
+ * @param before 转置前的矩阵
+ * @param after 转置后的矩阵
+ * @note 使用一趟扫描完成转置，时间复杂度O(n)
+ *       n为非零元素个数
+ */
 void transpose(RLSMatrix before, RLSMatrix *after)
 {
     if (before.eleNum == 0)
@@ -31,31 +36,32 @@ void transpose(RLSMatrix before, RLSMatrix *after)
         return;
     }
 
-    // TODO 先进行信息的基本传递
+    //先进行信息的基本传递
     after->eleNum = before.eleNum;
     after->colCount = before.rowCount;
     after->rowCount = before.colCount;
     int *rowStartPosition = calloc(after->rowCount + 1, sizeof(int)); //! 注意这里的+1 //! 注意这里是after
 
-    // TODO 进行行主序的提取
+    //进行行主序的提取
     int *colCount = calloc(before.colCount + 1, sizeof(int)); //! 注意数组的初始化问题
     for (int i = 0; i < before.eleNum; i++)
     {
         colCount[before.array[i].col]++;
     }
-    rowStartPosition[0] = 0;  // 从0开始
-    for (int i = 1; i < after->rowCount; i++) {  // 修改循环范围
+    rowStartPosition[0] = 0; // 从0开始
+    for (int i = 1; i < after->rowCount; i++)
+    { // 修改循环范围
         rowStartPosition[i] = rowStartPosition[i - 1] + colCount[i - 1];
     }
 
-    // TODO 进行数组元素的填充
+    //进行数组元素的填充
     for (int i = 0; i < after->eleNum; i++)
     {
         int beforeCol = before.array[i].col;
         int afterRow = rowStartPosition[beforeCol];
-        //after->array[afterRow] = before.array[afterRow]; //! 这里不应该原样复制的
-        after->array[afterRow].row = before.array[i].col;  // 行列互换
-        after->array[afterRow].col = before.array[i].row;  // 行列互换
+        // after->array[afterRow] = before.array[afterRow]; //! 这里不应该原样复制的
+        after->array[afterRow].row = before.array[i].col; // 行列互换
+        after->array[afterRow].col = before.array[i].row; // 行列互换
         after->array[afterRow].data = before.array[i].data;
 
         rowStartPosition[beforeCol]++;

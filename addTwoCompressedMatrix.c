@@ -1,3 +1,10 @@
+/*
+ * 文件名: addTwoCompressedMatrix.c
+ * 功能: 实现压缩存储稀疏矩阵的加法运算
+ * 作者: Zhao Fangming
+ * 完成时间: 2025-04-12
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -12,6 +19,13 @@ typedef struct matrix
     int rowCount, colCount, eleNum;
 } matrix;
 
+/*
+ * @brief 三元组元素比较函数
+ * @param a 第一个元素指针
+ * @param b 第二个元素指针
+ * @return 比较结果：<0表示a<b，=0表示a=b，>0表示a>b
+ * @note 先比较行号，行号相同时比较列号
+ */
 int compare(const void *a, const void *b)
 {
     element *p = (element *)a;
@@ -24,9 +38,15 @@ int compare(const void *a, const void *b)
     {
         return p->col - q->col;
     }
-    
 }
 
+/*
+ * @brief 压缩存储矩阵加法
+ * @param A 第一个矩阵
+ * @param B 第二个矩阵
+ * @return 返回结果矩阵指针，失败返回NULL
+ * @note 采用双指针扫描算法实现
+ */
 matrix *add(matrix A, matrix B)
 {
     if (A.colCount != B.colCount || A.rowCount != B.rowCount)
@@ -39,7 +59,7 @@ matrix *add(matrix A, matrix B)
     new->eleNum = A.eleNum + B.eleNum;
     new->colCount = A.colCount;
     new->rowCount = A.rowCount;
-    new->array = (element*)calloc(new->eleNum, sizeof(element));
+    new->array = (element *)calloc(new->eleNum, sizeof(element));
 
     // *先写快速算法
     // *先排序
@@ -49,6 +69,7 @@ matrix *add(matrix A, matrix B)
     //* 用双指针法遍历
     int ptrA = 0, ptrB = 0, ptrNew = 0;
 
+    //! 研究一下这个逻辑判断的生成思路
     while (ptrA < A.eleNum && ptrB < B.eleNum)
     {
         element a = A.array[ptrA];
@@ -76,7 +97,7 @@ matrix *add(matrix A, matrix B)
             ptrB++;
         }
     }
-    
+
     while (ptrA < A.eleNum)
     {
         new->array[ptrNew].row = A.array[ptrA].row;
@@ -94,16 +115,10 @@ matrix *add(matrix A, matrix B)
     new->eleNum = ptrNew;
 
     return new;
-    //TODO 整理两个矩阵元素数组的行信息：每行个数、数组中起始位置
-
-    //TODO 按元素搜索，有则相加，无则添加
-
-    //TODO 重新排序
-
-    //TODO 返回新矩阵
 }
 
-int main() {
+int main()
+{
     int m, n, t1, t2;
     scanf("%d %d %d %d", &m, &n, &t1, &t2);
 
@@ -118,18 +133,21 @@ int main() {
     B.array = (element *)malloc(t2 * sizeof(element));
 
     // 读取第一个矩阵的数据
-    for (int i = 0; i < t1; i++) {
+    for (int i = 0; i < t1; i++)
+    {
         scanf("%d %d %d", &A.array[i].row, &A.array[i].col, &A.array[i].value);
     }
 
     // 读取第二个矩阵的数据
-    for (int i = 0; i < t2; i++) {
+    for (int i = 0; i < t2; i++)
+    {
         scanf("%d %d %d", &B.array[i].row, &B.array[i].col, &B.array[i].value);
     }
 
     // 计算矩阵之和
     matrix *result = add(A, B);
-    if (result == NULL) {
+    if (result == NULL)
+    {
         // 清理内存并退出
         free(A.array);
         free(B.array);
@@ -137,7 +155,8 @@ int main() {
     }
 
     // 输出结果矩阵
-    for (int i = 0; i < result->eleNum; i++) {
+    for (int i = 0; i < result->eleNum; i++)
+    {
         printf("%d %d %d\n", result->array[i].row, result->array[i].col, result->array[i].value);
     }
 
