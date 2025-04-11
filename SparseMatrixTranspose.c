@@ -22,72 +22,82 @@ typedef struct RLSMatrix
 {
     element array[MAX];
     int rowCount, colCount, eleNum;
-    int *rowStartPosition, *colStartPosition;
 } RLSMatrix;
 
-void transpose(RLSMatrix before, RLSMatrix after)
+void transpose(RLSMatrix before, RLSMatrix *after)
 {
     if (before.eleNum == 0)
     {
         return;
     }
-    
-    //TODO 先进行信息的基本传递
-    after.eleNum = before.eleNum;
-    after.colCount = before.rowCount;
-    after.rowCount = before.colCount;
-    before.rowStartPosition = malloc(sizeof(int) * (before.rowCount + 1));//! 注意这里的+1
 
+    // TODO 先进行信息的基本传递
+    after->eleNum = before.eleNum;
+    after->colCount = before.rowCount;
+    after->rowCount = before.colCount;
+    int *rowStartPosition = calloc(after->rowCount + 1, sizeof(int)); //! 注意这里的+1 //! 注意这里是after
 
-    //TODO 进行行主序的提取
-    int *colCount = malloc(sizeof(int) * (before.colCount + 1));
+    // TODO 进行行主序的提取
+    int *colCount = calloc(before.colCount + 1, sizeof(int)); //! 注意数组的初始化问题
     for (int i = 0; i < before.eleNum; i++)
     {
         colCount[before.array[i].col]++;
     }
-    before.rowStartPosition[1] = 0;
-    for (int i = 2; i < before.rowCount; i++)
-    {
-        before.rowStartPosition[i] = before.rowStartPosition[i - 1] + colCount[i - 1];
+    rowStartPosition[0] = 0;  // 从0开始
+    for (int i = 1; i < after->rowCount; i++) {  // 修改循环范围
+        rowStartPosition[i] = rowStartPosition[i - 1] + colCount[i - 1];
     }
-    
 
-    //TODO 进行数组元素的填充
-    for (int i = 0; i < after.eleNum; i++)
+    // TODO 进行数组元素的填充
+    for (int i = 0; i < after->eleNum; i++)
     {
         int beforeCol = before.array[i].col;
-        int afterRow = before.rowStartPosition[beforeCol];
-        after.array[afterRow] = before.array[afterRow];
+        int afterRow = rowStartPosition[beforeCol];
+        //after->array[afterRow] = before.array[afterRow]; //! 这里不应该原样复制的
+        after->array[afterRow].row = before.array[i].col;  // 行列互换
+        after->array[afterRow].col = before.array[i].row;  // 行列互换
+        after->array[afterRow].data = before.array[i].data;
 
-        before.rowStartPosition[beforeCol]++;
+        rowStartPosition[beforeCol]++;
     }
+
+    free(colCount);
+    free(rowStartPosition);
     return;
 }
 
 int main()
 {
-    int row, col;
-    char buffer[8] = {0};
-    scanf("%d %d", &row, &col);
-    RLSMatrix before, after;
-    before.colCount = col;
-    before.rowCount = row;
-    before.colStartPosition = NULL;
-    before.rowStartPosition = NULL;
+    RLSMatrix before = {0}, after = {0};
 
-    int i = 0;
-    while (strcmp(gets(buffer), "0 0 0"))
+    // 读取矩阵维度
+    scanf("%d %d", &before.rowCount, &before.colCount);
+
+    // 读取三元组
+    before.eleNum = 0;
+    int r, c, v;
+    while (1)
     {
-        sscanf(buffer, "%d %d %d", &before.array[i].row, &before.array[i].row, &before.array[i].data);
+        scanf("%d %d %d", &r, &c, &v);
+        if (r == 0 && c == 0 && v == 0)
+            break;
+
+        before.array[before.eleNum].row = r;
+        before.array[before.eleNum].col = c;
+        before.array[before.eleNum].data = v;
         before.eleNum++;
     }
 
-    transpose(before, after);
+    transpose(before, &after);
 
+    // 输出转置后的结果
     for (int i = 0; i < after.eleNum; i++)
     {
-        printf("%d %d %d\n", after.array[i].row, after.array[i].col, after.array[i].data);
+        printf("%d %d %d\n",
+               after.array[i].row,
+               after.array[i].col,
+               after.array[i].data);
     }
-    
+
     return 0;
 }
