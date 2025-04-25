@@ -169,7 +169,7 @@ void preOrder(tree t)
 int main()
 {
     char string[100] = {0};
-    gets(string);
+    scanf("%s", string);
     //stack brackets = initStack();
     tree t = NULL;
     //parser(string, &t, brackets);
