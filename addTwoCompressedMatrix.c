@@ -76,9 +76,13 @@ matrix *add(matrix A, matrix B)
         element b = B.array[ptrB];
         if (a.row == b.row && a.col == b.col)
         {
-            new->array[ptrNew].row = a.row;
-            new->array[ptrNew].col = a.col;
-            new->array[ptrNew++].value = a.value + b.value;
+            int sum = a.value + b.value;
+            if (sum != 0)
+            {
+                new->array[ptrNew].row = a.row;
+                new->array[ptrNew].col = a.col;
+                new->array[ptrNew++].value = sum;
+            }
             ptrA++;
             ptrB++;
         }
@@ -119,12 +123,12 @@ matrix *add(matrix A, matrix B)
 
 int main()
 {
-    int m, n, t1, t2;
-    scanf("%d %d %d %d", &m, &n, &t1, &t2);
+    int t1, t2;
+    scanf("%d %d", &t1, &t2);
 
     matrix A, B;
-    A.rowCount = B.rowCount = m;
-    A.colCount = B.colCount = n;
+    A.rowCount = B.rowCount = 100;
+    A.colCount = B.colCount = 100;
     A.eleNum = t1;
     B.eleNum = t2;
 
